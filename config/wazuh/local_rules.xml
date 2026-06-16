@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Règles Wazuh personnalisées — SOC Tier 1 ESAIP -->
+<group name="local,syslog,sshd,">
+
+  <!-- Détection scan Nmap -->
+  <rule id="100001" level="10">
+    <if_group>syslog</if_group>
+    <match>nmap</match>
+    <description>Scan réseau détecté — Possible reconnaissance (MITRE T1046)</description>
+    <mitre><id>T1046</id></mitre>
+    <group>network_scan,</group>
+  </rule>
+
+  <!-- Brute force SSH renforcé -->
+  <rule id="100002" level="12" frequency="10" timeframe="60">
+    <if_matched_sid>5760</if_matched_sid>
+    <same_source_ip />
+    <description>Brute force SSH — 10+ tentatives/60s depuis même IP (MITRE T1110)</description>
+    <mitre><id>T1110</id></mitre>
+    <group>authentication_failures,</group>
+  </rule>
+
+  <!-- Connexion SSH réussie après échecs -->
+  <rule id="100003" level="14">
+    <if_matched_sid>100002</if_matched_sid>
+    <if_sid>5715</if_sid>
+    <description>Connexion SSH réussie après brute force — Compromission probable</description>
+    <mitre><id>T1078</id></mitre>
+    <group>authentication_success,high_priority,</group>
+  </rule>
+
+  <!-- Accès fichiers sensibles Linux -->
+  <rule id="100004" level="11">
+    <if_group>syscheck</if_group>
+    <match>/etc/passwd|/etc/shadow|/etc/sudoers</match>
+    <description>Modification fichier système critique (MITRE T1003)</description>
+    <mitre><id>T1003</id></mitre>
+    <group>fim,rootcheck,</group>
+  </rule>
+
+  <!-- Commande sudo suspecte -->
+  <rule id="100005" level="9">
+    <if_group>syslog</if_group>
+    <match>sudo: .* COMMAND=</match>
+    <regex>COMMAND=/bin/bash|COMMAND=/bin/sh|COMMAND=/usr/bin/python</regex>
+    <description>Élévation de privilèges via sudo — shell interactif (MITRE T1548)</description>
+    <mitre><id>T1548</id></mitre>
+    <group>privilege_escalation,</group>
+  </rule>
+
+</group>
