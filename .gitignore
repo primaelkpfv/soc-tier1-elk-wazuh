@@ -1,0 +1,19 @@
+# Logs
+*.log
+*.pcap
+*.evtx
+
+# Disk images (trop volumineux)
+*.vmdk
+*.vhd
+*.iso
+
+# Credentials
+*.key
+*.pem
+secrets.yml
+.env
+
+# OS
+.DS_Store
+Thumbs.db
